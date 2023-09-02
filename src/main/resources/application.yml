@@ -1,6 +1,13 @@
 spring:
   datasource:
-    url: jdbc:mysql://10.132.247.40:3306/book-piseo?useSSL=false&verifyServerCertificate=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true
+    url: jdbc:mysql://10.132.247.40:3306/book-piseo?useSSL=false&verifyServerCertificate=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true&allowPublicKeyRetrieval=true
     username: root
     password: qwer1234
     driver-class-name: com.mysql.jdbc.Driver
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+springdoc:
+  swagger-ui:
+    default-model-expand-depth: 5
+
