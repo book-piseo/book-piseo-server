@@ -3,9 +3,7 @@ package com.bookpiseo.entity
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UuidGenerator
-import java.sql.Timestamp
 import java.time.ZonedDateTime
-import java.util.*
 
 @Entity
 @Table(name = "book_piseo_team", schema = "book-piseo", catalog = "")
@@ -17,7 +15,7 @@ class BookPiseoTeam (
 
     @Basic
     @Column(name = "TEAM_NAME")
-    var teamName: String? = null,
+    var teamName: String,
 
     @Basic
     @Column(name = "TEAM_DESCRIPTION")

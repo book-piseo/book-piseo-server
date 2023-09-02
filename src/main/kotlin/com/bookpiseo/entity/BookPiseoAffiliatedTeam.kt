@@ -2,9 +2,7 @@ package com.bookpiseo.entity
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
-import java.sql.Timestamp
 import java.time.ZonedDateTime
-import java.util.*
 
 @Entity
 @Table(name = "book_piseo_affiliated_team", schema = "book-piseo", catalog = "")
@@ -14,9 +12,9 @@ class BookPiseoAffiliatedTeam(
         @Column(name = "ID")
         var id: Long = 0,
 
-        @Basic
-        @Column(name = "TEAM_ID")
-        var teamId: String? = null,
+        @ManyToOne
+        @JoinColumn(name = "TEAM_ID", referencedColumnName = "TEAM_ID")
+        var bookPiseoTeam: BookPiseoTeam,
 
         @Basic
         @Column(name = "USER_ID")
