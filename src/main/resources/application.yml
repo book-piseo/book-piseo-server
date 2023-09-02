@@ -4,3 +4,6 @@ spring:
     username: root
     password: qwer1234
     driver-class-name: com.mysql.jdbc.Driver
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
