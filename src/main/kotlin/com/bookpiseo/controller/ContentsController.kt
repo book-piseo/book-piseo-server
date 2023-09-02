@@ -9,7 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpSession
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "게시물", description = "게시물에 관련 된 API를 다룹니다.")
 @RestController
@@ -37,23 +40,6 @@ class ContentsController(
                 userInfo = httpSession.getAttribute("user") as UserInfo.UserSessionInfo,
                 request = request)
         return ResponseEntity.ok(null)
-    }
-
-    @Operation(
-            summary = "홈 화면 게시물 정보 API", description = """
-홈 화면 게시물 정보 가져오기 API
-		
-#### 사용자 정의 예외 케이스
-| Http Status | Error Code  | Error Message | Error Data | Remark   |
-|-------------|-------------|--------------|------------|-----------|
-|     403     | SESSION_EXPIRED | 세션이 만료 되었습니다. | | |   
-"""
-    )
-    @GetMapping("/home")
-    fun getHomeContentsInfos(
-            @Parameter(hidden = true) httpSession: HttpSession
-    ): ResponseEntity<ContentsInfo.HomeContentsInfo> {
-        return ResponseEntity.ok(contentsService.getHomeContentsInfos(httpSession))
     }
 
 }

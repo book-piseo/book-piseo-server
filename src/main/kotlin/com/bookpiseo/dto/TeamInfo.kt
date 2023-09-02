@@ -34,7 +34,5 @@ class TeamInfo {
             val isMaster: Boolean? = false,
             @Schema(description = "팀 소속 멤버들 정보", required = true)
             val teamMembers: List<TeamMemberInfoResponse>? = emptyList(),
-            @Schema(description = "팀에서 작성 된 게시물 정보", required = true)
-            val teamContents: List<ContentsInfo.ContentsInfoResponse>? = emptyList()
     )
 }

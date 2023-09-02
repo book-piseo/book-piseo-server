@@ -12,7 +12,7 @@ class BookPiseoAffiliatedTeam(
         @Column(name = "ID")
         var id: Long = 0,
 
-        @ManyToOne
+        @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "TEAM_ID", referencedColumnName = "TEAM_ID")
         var bookPiseoTeam: BookPiseoTeam,
 

@@ -12,6 +12,9 @@ import com.bookpiseo.repository.BookPiseoTeamRepository
 import com.bookpiseo.repository.BookPiseoUserRepository
 import com.google.gson.Gson
 import jakarta.servlet.http.HttpSession
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
@@ -23,6 +26,8 @@ class ContentsService(
         val bookPiseoTeamRepository: BookPiseoTeamRepository,
         val bookPiseoUserRepository: BookPiseoUserRepository
 ) {
+    private final val PAGE_SIZE: Int = 20
+
     @Transactional(rollbackFor = [Exception::class])
     fun saveContents(
             userInfo: UserInfo.UserSessionInfo,
@@ -41,47 +46,99 @@ class ContentsService(
 
 
     @Transactional(rollbackFor = [Exception::class])
-    fun getHomeContentsInfos(httpSession: HttpSession): ContentsInfo.HomeContentsInfo {
+    fun getOtherTeamsContentsInfos(httpSession: HttpSession,
+                                   pageNumber: Int
+    ): ContentsInfo.OtherTeamsContentsInfo {
         val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
             user as UserInfo.UserSessionInfo
         }
         userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
 
-        val teamContentsInfos = toContentsInfo(userSessionInfo.affiliatedTeamInfos?.let { bookPiseoContentsRepository.findAllByTeamIdIn(it.map { teamInfo -> teamInfo.teamId }) })
+        val pageable: PageRequest = PageRequest.of(pageNumber, PAGE_SIZE)
 
-        val otherContentsInfos = toContentsInfo(userSessionInfo.affiliatedTeamInfos?.let { bookPiseoContentsRepository.findAllByTeamId(it[0].teamId) })
+        val otherTeamsContentsInfos = toContentsInfo(userSessionInfo.affiliatedTeamInfos?.let {
+            bookPiseoContentsRepository.findAll(pageable)
+        })
 
-        return ContentsInfo.HomeContentsInfo(
-                teamContentsInfos = teamContentsInfos,
-                otherContentsInfos = otherContentsInfos
+        return ContentsInfo.OtherTeamsContentsInfo(
+                otherTeamsContentsInfos = otherTeamsContentsInfos
         )
     }
 
-    fun toContentsInfo(bookPiseoContentsInfos: List<BookPiseoContents>?): List<ContentsInfo.ContentsInfoResponse>? {
-        return bookPiseoContentsInfos?.map { contentsInfo ->
-            val writerInfo = contentsInfo.writerId
-                    ?.let { bookPiseoUserRepository.findById(it).orElse(null) }
-                    ?.let { writerInfo ->
-                        ContentsInfo.WriterInfoResponse(
-                                userId = writerInfo.userId!!,
-                                userName = writerInfo.userName,
-                                profileImg = writerInfo.profileImg,
-                                email = writerInfo.email,
-                                phone = writerInfo.phone
-                        )
-                    }
-            ContentsInfo.ContentsInfoResponse(
-                    contentsId = contentsInfo.contentsId!!,
-                    contentsTitle = contentsInfo.contentsTitle,
-                    contentsText = contentsInfo.contentsText,
-                    bookInfo = Gson().fromJson(contentsInfo.bookInfo, BookInfo::class.java),
-                    teamId = contentsInfo.teamId,
-                    teamName = bookPiseoTeamRepository.findById(contentsInfo.teamId).orElse(null)?.teamName
-                            ?: "Unknown",
-                    writerInfo = writerInfo,
-                    regDt = contentsInfo.regDt!!.withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime()
+    @Transactional(rollbackFor = [Exception::class])
+    fun getAffiliatedTeamsContentsInfos(httpSession: HttpSession,
+                                        pageNumber: Int
+    ): ContentsInfo.AffiliatedTeamsContentsInfo {
+        val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
+            user as UserInfo.UserSessionInfo
+        }
+        userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
+        val pageable: PageRequest = PageRequest.of(pageNumber, PAGE_SIZE)
+        val affiliatedTeamsContentsInfos = toContentsInfo(
+                userSessionInfo.affiliatedTeamInfos
+                        ?.let {
+                            bookPiseoContentsRepository.findAllByTeamIdIn(
+                                    it.map { teamInfo -> teamInfo.teamId },
+                                    pageable = pageable)
+                        }
+        )
 
-            )
+        return ContentsInfo.AffiliatedTeamsContentsInfo(
+                affiliatedTeamsContentsInfos = affiliatedTeamsContentsInfos
+        )
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    fun getTeamContentsInfos(httpSession: HttpSession,
+                             teamId: String,
+                             pageNumber: Int
+    ): ContentsInfo.TeamContentsInfo {
+        val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
+            user as UserInfo.UserSessionInfo
+        }
+        userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
+        val pageable: PageRequest = PageRequest.of(pageNumber, PAGE_SIZE)
+        val teamContentsInfos = toContentsInfo(
+                bookPiseoContentsRepository.findAllByTeamId(
+                        teamId,
+                        pageable = pageable)
+
+        )
+
+        return ContentsInfo.TeamContentsInfo(
+                teamContentsInfos = teamContentsInfos
+        )
+    }
+
+    fun toContentsInfo(bookPiseoContentsInfos: Page<BookPiseoContents?>?): Page<ContentsInfo.ContentsInfoResponse>? {
+        return bookPiseoContentsInfos?.mapNotNull { contentsNullableInfo ->
+            contentsNullableInfo?.let { contentsInfo ->
+                val writerInfo = contentsInfo.writerId
+                        ?.let { bookPiseoUserRepository.findById(it).orElse(null) }
+                        ?.let { writerInfo ->
+                            ContentsInfo.WriterInfoResponse(
+                                    userId = writerInfo.userId!!,
+                                    userName = writerInfo.userName,
+                                    profileImg = writerInfo.profileImg,
+                                    email = writerInfo.email,
+                                    phone = writerInfo.phone
+                            )
+                        }
+
+                ContentsInfo.ContentsInfoResponse(
+                        contentsId = contentsInfo.contentsId!!,
+                        contentsTitle = contentsInfo.contentsTitle,
+                        contentsText = contentsInfo.contentsText,
+                        bookInfo = Gson().fromJson(contentsInfo.bookInfo, BookInfo::class.java),
+                        teamId = contentsInfo.teamId,
+                        teamName = bookPiseoTeamRepository.findById(contentsInfo.teamId).orElse(null)?.teamName
+                                ?: "Unknown",
+                        writerInfo = writerInfo,
+                        regDt = contentsInfo.regDt!!.withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime()
+                )
+            }
+        }?.let { transformedList ->
+            PageImpl(transformedList, bookPiseoContentsInfos.pageable, bookPiseoContentsInfos.totalElements)
         }
     }
 
