@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpSession
+import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -33,7 +34,7 @@ class HomeController(
     fun getOtherTeamsContentsInfos(
             @Parameter(hidden = true) httpSession: HttpSession,
             @Parameter(description = "페이징 넘버, 0부터 시작") @PathVariable pageNumber: Int
-    ): ResponseEntity<ContentsInfo.OtherTeamsContentsInfo> {
+    ): ResponseEntity<Page<ContentsInfo.ContentsInfoResponse>> {
         return ResponseEntity.ok(contentsService.getOtherTeamsContentsInfos(httpSession, pageNumber))
     }
 
@@ -51,7 +52,7 @@ class HomeController(
     fun getAffiliatedTeamsContentsInfos(
             @Parameter(hidden = true) httpSession: HttpSession,
             @Parameter(description = "페이징 넘버, 0부터 시작") @PathVariable pageNumber: Int
-    ): ResponseEntity<ContentsInfo.AffiliatedTeamsContentsInfo> {
+    ): ResponseEntity<Page<ContentsInfo.ContentsInfoResponse>> {
         return ResponseEntity.ok(contentsService.getAffiliatedTeamsContentsInfos(httpSession, pageNumber))
     }
 

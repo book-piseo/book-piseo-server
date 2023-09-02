@@ -48,7 +48,7 @@ class ContentsService(
     @Transactional(rollbackFor = [Exception::class])
     fun getOtherTeamsContentsInfos(httpSession: HttpSession,
                                    pageNumber: Int
-    ): ContentsInfo.OtherTeamsContentsInfo {
+    ): Page<ContentsInfo.ContentsInfoResponse> {
         val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
             user as UserInfo.UserSessionInfo
         }
@@ -60,15 +60,13 @@ class ContentsService(
             bookPiseoContentsRepository.findAll(pageable)
         })
 
-        return ContentsInfo.OtherTeamsContentsInfo(
-                otherTeamsContentsInfos = otherTeamsContentsInfos
-        )
+        return otherTeamsContentsInfos ?: Page.empty()
     }
 
     @Transactional(rollbackFor = [Exception::class])
     fun getAffiliatedTeamsContentsInfos(httpSession: HttpSession,
                                         pageNumber: Int
-    ): ContentsInfo.AffiliatedTeamsContentsInfo {
+    ): Page<ContentsInfo.ContentsInfoResponse> {
         val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
             user as UserInfo.UserSessionInfo
         }
@@ -83,16 +81,15 @@ class ContentsService(
                         }
         )
 
-        return ContentsInfo.AffiliatedTeamsContentsInfo(
-                affiliatedTeamsContentsInfos = affiliatedTeamsContentsInfos
-        )
+        return affiliatedTeamsContentsInfos ?: Page.empty()
+
     }
 
     @Transactional(rollbackFor = [Exception::class])
     fun getTeamContentsInfos(httpSession: HttpSession,
                              teamId: String,
                              pageNumber: Int
-    ): ContentsInfo.TeamContentsInfo {
+    ): Page<ContentsInfo.ContentsInfoResponse> {
         val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
             user as UserInfo.UserSessionInfo
         }
@@ -105,9 +102,8 @@ class ContentsService(
 
         )
 
-        return ContentsInfo.TeamContentsInfo(
-                teamContentsInfos = teamContentsInfos
-        )
+        return teamContentsInfos ?: Page.empty()
+
     }
 
     fun toContentsInfo(bookPiseoContentsInfos: Page<BookPiseoContents?>?): Page<ContentsInfo.ContentsInfoResponse>? {

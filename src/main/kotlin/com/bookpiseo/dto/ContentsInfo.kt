@@ -3,7 +3,6 @@ package com.bookpiseo.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import org.springframework.data.domain.Page
 import java.time.LocalDateTime
 
 class ContentsInfo {
@@ -40,24 +39,6 @@ class ContentsInfo {
             val writerInfo: WriterInfoResponse?,
             @Schema(description = "작성일", required = true)
             val regDt: LocalDateTime,
-    )
-
-    @Schema(description = "팀 상세 화면 > 소속 팀의 게시물 리스트")
-    data class TeamContentsInfo(
-            @Schema(description = "팀 상세 화면 > 팀 게시물 리스트")
-            val teamContentsInfos: Page<ContentsInfoResponse>? = Page.empty(),
-    )
-
-    @Schema(description = "홈 화면 게시물 정보 > 소속 된 팀들의 게시물 리스트")
-    data class AffiliatedTeamsContentsInfo(
-            @Schema(description = "소속 된 팀들의 게시물 리스트")
-            val affiliatedTeamsContentsInfos: Page<ContentsInfoResponse>? = Page.empty(),
-    )
-
-    @Schema(description = "홈 화면 게시물 정보 > 다른 팀들의 게시물 리스트")
-    data class OtherTeamsContentsInfo(
-            @Schema(description = "다른 팀들의 게시물 리스트")
-            val otherTeamsContentsInfos: Page<ContentsInfoResponse>? = Page.empty()
     )
 
     @Schema(description = "작성자 정보")
