@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface BookPiseoContentsRepository : JpaRepository<BookPiseoContents?, Long?> {
+interface BookPiseoContentsRepository : JpaRepository<BookPiseoContents?, String?> {
     fun findAllByTeamIdIn(teamIds: List<String>, pageable: Pageable): Page<BookPiseoContents?>?
     fun findAllByTeamId(teamId: String, pageable: Pageable): Page<BookPiseoContents?>?
 

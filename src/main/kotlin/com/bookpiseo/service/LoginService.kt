@@ -24,6 +24,7 @@ class LoginService(
             request: Login.LoginRequest
     ) {
         val user = bookPiseoUserRepository.findByEmail(request.email)
+                ?: throw BaseException(BaseResponseCode.INVALID_LOGIN_INFO)
         val encoder = BCryptPasswordEncoder()
         if (encoder.matches(request.password, user.password)) {
             val affiliatedTeams = bookPiseoAffiliatedTeamRepository.findAllByUserId(user.userId!!)

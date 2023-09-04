@@ -138,5 +138,36 @@ class ContentsService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getContentsInfo(userInfo: UserInfo.UserSessionInfo, contentsId: String): ContentsInfo.ContentsInfoResponse? {
+        return bookPiseoContentsRepository.findById(contentsId).orElseThrow {
+            BaseException(BaseResponseCode.INVALID_PARAMETER)
+        }?.let {
+            val writerInfo = it.writerId
+                    ?.let { id -> bookPiseoUserRepository.findById(id).orElse(null) }
+                    ?.let { writerInfo ->
+                        ContentsInfo.WriterInfoResponse(
+                                userId = writerInfo.userId!!,
+                                userName = writerInfo.userName,
+                                profileImg = writerInfo.profileImg,
+                                email = writerInfo.email,
+                                phone = writerInfo.phone
+                        )
+                    }
+            ContentsInfo.ContentsInfoResponse(
+                    contentsId = it.contentsId!!,
+                    contentsTitle = it.contentsTitle,
+                    contentsText = it.contentsText,
+                    bookInfo = Gson().fromJson(Gson().toJson(it.bookInfo), BookInfo::class.java),
+                    teamId = it.teamId,
+                    teamName = bookPiseoTeamRepository.findById(it.teamId).orElse(null)?.teamName
+                            ?: "Unknown",
+                    writerInfo = writerInfo,
+                    regDt = it.regDt!!.withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime()
+            )
+        }
+
+    }
+
 
 }
