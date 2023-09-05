@@ -10,6 +10,7 @@ import com.bookpiseo.exception.BaseResponseCode
 import com.bookpiseo.repository.BookPiseoContentsRepository
 import com.bookpiseo.repository.BookPiseoTeamRepository
 import com.bookpiseo.repository.BookPiseoUserRepository
+import com.bookpiseo.repository.BookPiseoUserTokenRepository
 import com.google.gson.Gson
 import jakarta.servlet.http.HttpSession
 import org.springframework.data.domain.Page
@@ -22,59 +23,52 @@ import java.time.ZoneId
 
 @Service
 class ContentsService(
+        val bookPiseoUserTokenRepository: BookPiseoUserTokenRepository,
         val bookPiseoContentsRepository: BookPiseoContentsRepository,
         val bookPiseoTeamRepository: BookPiseoTeamRepository,
-        val bookPiseoUserRepository: BookPiseoUserRepository
+        val bookPiseoUserRepository: BookPiseoUserRepository,
+        val userService: UserService
 ) {
     private final val PAGE_SIZE: Int = 20
 
     @Transactional(rollbackFor = [Exception::class])
-    fun saveContents(
-            userInfo: UserInfo.UserSessionInfo,
-            request: ContentsInfo.ContentsSaveRequest) {
-
+    fun saveContents(userToken: String, request: ContentsInfo.ContentsSaveRequest) {
+        val userInfo = bookPiseoUserTokenRepository.findById(userToken).orElseThrow {
+            BaseException(BaseResponseCode.SESSION_EXPIRED)
+        }
         bookPiseoContentsRepository.save(
                 BookPiseoContents(
                         contentsTitle = request.contentsTitle,
                         contentsText = request.contentsText,
                         bookInfo = Gson().toJson(request.bookInfo),
                         teamId = request.teamId,
-                        writerId = userInfo.userId,
+                        writerId = userInfo!!.userId,
                 )
         )
     }
 
 
     @Transactional(rollbackFor = [Exception::class])
-    fun getOtherTeamsContentsInfos(httpSession: HttpSession,
-                                   pageNumber: Int
+    fun getOtherTeamsContentsInfos(
+            pageNumber: Int
     ): Page<ContentsInfo.ContentsInfoResponse> {
-        val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
-            user as UserInfo.UserSessionInfo
-        }
-        userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
-
         val pageable: PageRequest = PageRequest.of(pageNumber, PAGE_SIZE)
 
-        val otherTeamsContentsInfos = toContentsInfo(userSessionInfo.affiliatedTeamInfos?.let {
-            bookPiseoContentsRepository.findAll(pageable)
-        })
+        val otherTeamsContentsInfos = toContentsInfo(bookPiseoContentsRepository.findAll(pageable))
+
 
         return otherTeamsContentsInfos ?: Page.empty()
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    fun getAffiliatedTeamsContentsInfos(httpSession: HttpSession,
-                                        pageNumber: Int
-    ): Page<ContentsInfo.ContentsInfoResponse> {
-        val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
-            user as UserInfo.UserSessionInfo
+    fun getAffiliatedTeamsContentsInfos(userToken: String, pageNumber: Int): Page<ContentsInfo.ContentsInfoResponse> {
+        val userInfo = bookPiseoUserTokenRepository.findById(userToken).orElseThrow {
+            BaseException(BaseResponseCode.SESSION_EXPIRED)
         }
-        userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
         val pageable: PageRequest = PageRequest.of(pageNumber, PAGE_SIZE)
         val affiliatedTeamsContentsInfos = toContentsInfo(
-                userSessionInfo.affiliatedTeamInfos
-                        ?.let {
+                userService.getUserAffiliatedTeamInfos(userInfo?.userId!!)
+                        .let {
                             bookPiseoContentsRepository.findAllByTeamIdIn(
                                     it.map { teamInfo -> teamInfo.teamId },
                                     pageable = pageable)
@@ -86,14 +80,11 @@ class ContentsService(
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    fun getTeamContentsInfos(httpSession: HttpSession,
-                             teamId: String,
-                             pageNumber: Int
+    fun getTeamContentsInfos(
+            userToken: String,
+            teamId: String,
+            pageNumber: Int
     ): Page<ContentsInfo.ContentsInfoResponse> {
-        val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
-            user as UserInfo.UserSessionInfo
-        }
-        userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
         val pageable: PageRequest = PageRequest.of(pageNumber, PAGE_SIZE)
         val teamContentsInfos = toContentsInfo(
                 bookPiseoContentsRepository.findAllByTeamId(
@@ -139,7 +130,7 @@ class ContentsService(
     }
 
     @Transactional(readOnly = true)
-    fun getContentsInfo(userInfo: UserInfo.UserSessionInfo, contentsId: String): ContentsInfo.ContentsInfoResponse? {
+    fun getContentsInfo(contentsId: String): ContentsInfo.ContentsInfoResponse? {
         return bookPiseoContentsRepository.findById(contentsId).orElseThrow {
             BaseException(BaseResponseCode.INVALID_PARAMETER)
         }?.let {

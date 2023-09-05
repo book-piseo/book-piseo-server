@@ -16,4 +16,13 @@ class Login {
     ) {
 
     }
+
+    @Schema(description = "로그인 Response 객체")
+    data class LoginResponse(
+            @Schema(description = "유저 인증 토큰", required = true)
+            var tokenId: String,
+
+    ) {
+
+    }
 }
