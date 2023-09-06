@@ -17,15 +17,13 @@ import org.springframework.transaction.annotation.Transactional
 class TeamService(
         val bookPiseoAffiliatedTeamRepository: BookPiseoAffiliatedTeamRepository,
         val bookPiseoTeamRepository: BookPiseoTeamRepository,
-        val bookPiseoUserRepository: BookPiseoUserRepository
+        val bookPiseoUserRepository: BookPiseoUserRepository,
+        val userService: UserService
 ) {
 
     @Transactional(rollbackFor = [Exception::class])
-    fun getTeamDetailInfo(httpSession: HttpSession, teamId: String): TeamInfo.TeamDetailInfoResponse {
-        val userSessionInfo = httpSession.getAttribute("user")?.let { user ->
-            user as UserInfo.UserSessionInfo
-        }
-        userSessionInfo ?: throw BaseException(BaseResponseCode.SESSION_EXPIRED)
+    fun getTeamDetailInfo(userToken: String, teamId: String): TeamInfo.TeamDetailInfoResponse {
+        val userDefaultInfo = userService.getUserDefaultInfo(userToken)
 
         return bookPiseoTeamRepository.findById(teamId).orElse(null)?.let {
             val teamMembers = bookPiseoAffiliatedTeamRepository.findAllByBookPiseoTeam(it)
@@ -35,7 +33,7 @@ class TeamService(
                     teamName = it.teamName,
                     teamDescription = it.teamDescription,
                     teamImg = it.teamImg,
-                    isMaster = userSessionInfo.affiliatedTeamInfos?.any { affiliatedTeamInfo ->
+                    isMaster = userDefaultInfo.affiliatedTeamInfos?.any { affiliatedTeamInfo ->
                         affiliatedTeamInfo.teamId == it.teamId && affiliatedTeamInfo.isMaster == true
                     },
                     teamMembers = teamMemberInfos.mapNotNull { teamMemberInfo ->

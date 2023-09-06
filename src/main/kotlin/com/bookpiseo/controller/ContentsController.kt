@@ -30,12 +30,10 @@ class ContentsController(
     )
     @PostMapping
     fun saveContentsInfo(
-            @Parameter(hidden = true) httpSession: HttpSession,
+            @Parameter(description = "유저 토큰") @RequestHeader(name = "User-Token") userToken: String,
             @Parameter(description = "작성 게시물 정보") @RequestBody @Valid request: ContentsInfo.ContentsSaveRequest
     ): ResponseEntity<Void> {
-        contentsService.saveContents(
-                userInfo = httpSession.getAttribute("user") as UserInfo.UserSessionInfo,
-                request = request)
+        contentsService.saveContents(userToken = userToken,request = request)
         return ResponseEntity.ok(null)
     }
 
@@ -51,13 +49,10 @@ class ContentsController(
     )
     @GetMapping("/{contentsId}")
     fun getContentsInfo(
-            @Parameter(hidden = true) httpSession: HttpSession,
             @Parameter(description = "게시물 ID", required = true) @PathVariable contentsId: String
     ): ResponseEntity<ContentsInfo.ContentsInfoResponse> {
 
-        return ResponseEntity.ok(contentsService.getContentsInfo(
-                userInfo = httpSession.getAttribute("user") as UserInfo.UserSessionInfo,
-                contentsId = contentsId))
+        return ResponseEntity.ok(contentsService.getContentsInfo(contentsId = contentsId))
     }
 
 }

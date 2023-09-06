@@ -40,13 +40,9 @@ class LoginController(
             ])
     @PostMapping("/login")
     fun login(
-            @Parameter(hidden = true) httpSession: HttpSession,
             @Parameter(description = "로그인 요청 객체") @RequestBody @Valid request: Login.LoginRequest
-    ): ResponseEntity<Void> {
-        loginService.login(
-                httpSession = httpSession,
-                request = request)
-        return ResponseEntity.ok(null)
+    ): ResponseEntity<Login.LoginResponse> {
+        return ResponseEntity.ok(loginService.login(request = request))
     }
 
 }

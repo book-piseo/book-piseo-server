@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -30,9 +31,9 @@ class UserController(
     )
     @GetMapping
     fun getUserInfo(
-            @Parameter(hidden = true) httpSession: HttpSession
-    ): ResponseEntity<UserInfo.UserSessionInfo> {
-        return ResponseEntity.ok(userService.getUserSessionInfo(httpSession))
+            @Parameter(description = "유저 토큰") @RequestHeader(name = "User-Token") userToken: String
+    ): ResponseEntity<UserInfo.UserDefaultInfo> {
+        return ResponseEntity.ok(userService.getUserDefaultInfo(userToken))
     }
 
 }

@@ -3,8 +3,8 @@ package com.bookpiseo.dto
 import io.swagger.v3.oas.annotations.media.Schema
 
 class UserInfo {
-    @Schema(description = "세선에 저장 될 유저 정보")
-    data class UserSessionInfo(
+    @Schema(description = "기본 유저 정보")
+    data class UserDefaultInfo(
             @Schema(description = "유저 ID")
             val userId: String,
             @Schema(description = "유저 이름")

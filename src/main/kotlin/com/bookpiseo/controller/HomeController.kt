@@ -8,10 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpSession
 import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @Tag(name = "홈 화면", description = "홈 화면에 관련 된 API를 다룹니다.")
 @RestController
@@ -32,10 +29,9 @@ class HomeController(
     )
     @GetMapping("/other-teams/contents/{pageNumber}")
     fun getOtherTeamsContentsInfos(
-            @Parameter(hidden = true) httpSession: HttpSession,
             @Parameter(description = "페이징 넘버, 0부터 시작") @PathVariable pageNumber: Int
     ): ResponseEntity<Page<ContentsInfo.ContentsInfoResponse>> {
-        return ResponseEntity.ok(contentsService.getOtherTeamsContentsInfos(httpSession, pageNumber))
+        return ResponseEntity.ok(contentsService.getOtherTeamsContentsInfos(pageNumber))
     }
 
     @Operation(
@@ -50,10 +46,10 @@ class HomeController(
     )
     @GetMapping("/affiliated-teams/contents/{pageNumber}")
     fun getAffiliatedTeamsContentsInfos(
-            @Parameter(hidden = true) httpSession: HttpSession,
+            @Parameter(description = "유저 토큰") @RequestHeader(name = "User-Token") userToken: String,
             @Parameter(description = "페이징 넘버, 0부터 시작") @PathVariable pageNumber: Int
     ): ResponseEntity<Page<ContentsInfo.ContentsInfoResponse>> {
-        return ResponseEntity.ok(contentsService.getAffiliatedTeamsContentsInfos(httpSession, pageNumber))
+        return ResponseEntity.ok(contentsService.getAffiliatedTeamsContentsInfos(userToken, pageNumber))
     }
 
 
