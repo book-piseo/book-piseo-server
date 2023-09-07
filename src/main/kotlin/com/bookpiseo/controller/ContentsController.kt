@@ -1,12 +1,10 @@
 package com.bookpiseo.controller
 
 import com.bookpiseo.dto.ContentsInfo
-import com.bookpiseo.dto.UserInfo
 import com.bookpiseo.service.ContentsService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.servlet.http.HttpSession
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -32,9 +30,8 @@ class ContentsController(
     fun saveContentsInfo(
             @Parameter(description = "유저 토큰") @RequestHeader(name = "User-Token") userToken: String,
             @Parameter(description = "작성 게시물 정보") @RequestBody @Valid request: ContentsInfo.ContentsSaveRequest
-    ): ResponseEntity<Void> {
-        contentsService.saveContents(userToken = userToken,request = request)
-        return ResponseEntity.ok(null)
+    ): ResponseEntity<ContentsInfo.ContentsSaveResponse> {
+        return ResponseEntity.ok(contentsService.saveContents(userToken = userToken, request = request))
     }
 
     @Operation(
@@ -44,7 +41,7 @@ class ContentsController(
 #### 사용자 정의 예외 케이스
 | Http Status | Error Code  | Error Message | Error Data | Remark   |
 |-------------|-------------|--------------|------------|-----------|
-|     403     | SESSION_EXPIRED | 세션이 만료 되었습니다. | | |   
+|     400     | INVALID_PARAMETER | 잘못 된 파라미터 정보입니다. | | |   
 """
     )
     @GetMapping("/{contentsId}")

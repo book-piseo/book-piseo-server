@@ -1,6 +1,9 @@
 package com.bookpiseo.dto
 
+import com.google.gson.Gson
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Converter
 
 @Schema(description = "도서 정보 (네이버 도서 검색 API Response 기반)")
 data class BookInfo(
@@ -22,5 +25,20 @@ data class BookInfo(
         val isbn: String?,
         @Schema(description = "도서 설명")
         val description: String?
-)
+) {
+        @Converter(autoApply = true)
+        class BookInfoConverter : AttributeConverter<BookInfo, String> {
+                override fun convertToDatabaseColumn(attribute: BookInfo?): String? {
+                        return attribute?.let {
+                                Gson().toJson(it)
+                        }
+                }
+
+                override fun convertToEntityAttribute(dbData: String?): BookInfo? {
+                        return dbData?.let {
+                                Gson().fromJson(it, BookInfo::class.java)
+                        }
+                }
+        }
+}
 
