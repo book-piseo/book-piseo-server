@@ -1,5 +1,6 @@
 package com.bookpiseo.entity
 
+import com.bookpiseo.dto.BookInfo
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UuidGenerator
@@ -21,9 +22,10 @@ class BookPiseoContents(
         @Column(name = "CONTENTS_TEXT")
         var contentsText: String? = null,
 
-        @Basic
+
         @Column(name = "BOOK_INFO")
-        var bookInfo: String,
+        @Convert(converter = BookInfo.BookInfoConverter::class)
+        var bookInfo: BookInfo,
 
         @Basic
         @Column(name = "TEAM_ID")

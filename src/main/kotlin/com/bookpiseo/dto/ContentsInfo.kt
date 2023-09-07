@@ -21,6 +21,13 @@ class ContentsInfo {
             val teamId: String
     )
 
+    @Schema(description = "작성 게시물 저장 Response")
+    data class ContentsSaveResponse(
+            @NotBlank
+            @Schema(description = "저장 된 게시물 ID", required = true)
+            val contentsId: String
+    )
+
     @Schema(description = "게시물 정보")
     data class ContentsInfoResponse(
             @Schema(description = "게시물 ID", required = true)

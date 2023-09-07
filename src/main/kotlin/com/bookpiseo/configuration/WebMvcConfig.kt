@@ -12,7 +12,7 @@ class WebMvcConfig(private val tokenInterceptor: TokenInterceptor) : WebMvcConfi
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(tokenInterceptor)
                 .addPathPatterns("/**") // 모든 요청에 대해 Interceptor 적용
-                .excludePathPatterns("/api/login", "/api/home/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html"
+                .excludePathPatterns("/api/login", "/api/home/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api/contents/{contentsId}"
                 ) // 예외 URL 설정
     }
 

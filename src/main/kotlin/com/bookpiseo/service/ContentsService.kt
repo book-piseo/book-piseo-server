@@ -3,7 +3,6 @@ package com.bookpiseo.service
 
 import com.bookpiseo.dto.BookInfo
 import com.bookpiseo.dto.ContentsInfo
-import com.bookpiseo.dto.UserInfo
 import com.bookpiseo.entity.BookPiseoContents
 import com.bookpiseo.exception.BaseException
 import com.bookpiseo.exception.BaseResponseCode
@@ -12,7 +11,6 @@ import com.bookpiseo.repository.BookPiseoTeamRepository
 import com.bookpiseo.repository.BookPiseoUserRepository
 import com.bookpiseo.repository.BookPiseoUserTokenRepository
 import com.google.gson.Gson
-import jakarta.servlet.http.HttpSession
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -32,19 +30,20 @@ class ContentsService(
     private final val PAGE_SIZE: Int = 20
 
     @Transactional(rollbackFor = [Exception::class])
-    fun saveContents(userToken: String, request: ContentsInfo.ContentsSaveRequest) {
+    fun saveContents(userToken: String, request: ContentsInfo.ContentsSaveRequest): ContentsInfo.ContentsSaveResponse {
         val userInfo = bookPiseoUserTokenRepository.findById(userToken).orElseThrow {
             BaseException(BaseResponseCode.SESSION_EXPIRED)
         }
-        bookPiseoContentsRepository.save(
+        val contentsInfo = bookPiseoContentsRepository.saveAndFlush(
                 BookPiseoContents(
                         contentsTitle = request.contentsTitle,
                         contentsText = request.contentsText,
-                        bookInfo = Gson().toJson(request.bookInfo),
+                        bookInfo = request.bookInfo,
                         teamId = request.teamId,
                         writerId = userInfo!!.userId,
                 )
         )
+        return ContentsInfo.ContentsSaveResponse(contentsId = contentsInfo.contentsId!!)
     }
 
 
@@ -116,7 +115,7 @@ class ContentsService(
                         contentsId = contentsInfo.contentsId!!,
                         contentsTitle = contentsInfo.contentsTitle,
                         contentsText = contentsInfo.contentsText,
-                        bookInfo = Gson().fromJson(contentsInfo.bookInfo, BookInfo::class.java),
+                        bookInfo = contentsInfo.bookInfo,
                         teamId = contentsInfo.teamId,
                         teamName = bookPiseoTeamRepository.findById(contentsInfo.teamId).orElse(null)?.teamName
                                 ?: "Unknown",
